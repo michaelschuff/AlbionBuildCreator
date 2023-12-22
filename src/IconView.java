@@ -1,9 +1,3 @@
-package Display;
-
-import Items.ItemType;
-
-import java.awt.*;
-
 public class IconView {
     public int x, y;
     public int size;

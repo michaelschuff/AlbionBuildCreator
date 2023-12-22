@@ -1,13 +1,9 @@
-import Display.BuildSheetData;
-import Display.Window;
-import Items.Tier;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
 import static java.lang.Integer.parseInt;
-import static util.ResourcePath.genResourcePath;
+//import static util.ResourcePath.genResourcePath;
 
 
 public class EzBuild {
@@ -47,7 +43,7 @@ public class EzBuild {
         return template;
     }
     public void run() {
-        genResourcePath();
+//        genResourcePath();
 
 //        String t = getTemplate();
         String t = "AbilityBuild";

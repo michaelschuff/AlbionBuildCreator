@@ -1,5 +1,3 @@
-package Items;
-
 public enum Tier {
     T0,
     T1,

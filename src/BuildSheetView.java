@@ -1,6 +1,4 @@
-package Display;
-
-import util.ResourcePath;
+//import util.ResourcePath;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
@@ -8,6 +6,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Objects;
@@ -134,11 +133,18 @@ public class BuildSheetView extends Canvas implements MouseListener, MouseMotion
             IconView icon = data.icons.get(i);
             if (!Objects.equals(icon.id, "")) {
                 try {
-                    im = ImageIO.read(ResourcePath.getURL(icon.id));
+                    InputStream is = getClass().getResourceAsStream("resources/icons/" + icon.id);
+
+                    im = ImageIO.read(is);
+//                    im = ImageIO.read(ResourcePath.getURL(icon.id));
                 } catch (IOException e) {
                     System.out.println("Could not read image at " + icon.id + ".png");
                     try {
-                        im = ImageIO.read(ResourcePath.getURL("icons/empty/" + icon.type.toString() + ".png"));
+
+                        InputStream is = getClass().getResourceAsStream("resources/icons/empty/" + icon.type.toString() + ".png");
+
+                        im = ImageIO.read(is);
+//                        im = ImageIO.read(ResourcePath.getURL("icons/empty/" + icon.type.toString() + ".png"));
                     } catch (IOException ee) {
                         System.out.println("Could not read empty image file at icons/empty/" + icon.type.toString() + ".png");
                         exit(0); return;
@@ -146,7 +152,11 @@ public class BuildSheetView extends Canvas implements MouseListener, MouseMotion
                 }
             } else {
                 try {
-                    im = ImageIO.read(ResourcePath.getURL("icons/empty/" + icon.type.toString() + ".png"));
+
+                    InputStream is = getClass().getResourceAsStream("resources/icons/empty/" + icon.type.toString() + ".png");
+
+                    im = ImageIO.read(is);
+//                    im = ImageIO.read(ResourcePath.getURL("icons/empty/" + icon.type.toString() + ".png"));
                 } catch (IOException e) {
                     System.out.println("Could not read empty image file at icons/empty/" + icon.type.toString() + ".png");
                     exit(0); return;
