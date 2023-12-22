@@ -1,3 +1,5 @@
+package ezbuild.util;
+
 public enum Tier {
     T0,
     T1,

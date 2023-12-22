@@ -1,3 +1,5 @@
+package ezbuild.util;
+
 public enum ItemType {
     MAINHAND, OFFHAND,
     HEAD, CHEST, FEET,
@@ -6,4 +8,5 @@ public enum ItemType {
     MOUNT,
     GENERIC,
     ABILITY
-}
+};
+

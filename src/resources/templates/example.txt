@@ -1,3 +1,0 @@
-width height
-x y type
-50 80 CHEST

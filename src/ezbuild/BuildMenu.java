@@ -1,5 +1,13 @@
+package ezbuild;
+
+import ezbuild.builder.BuildSheetData;
+import ezbuild.builder.BuildSheetView;
+
 import javax.imageio.ImageIO;
 import javax.swing.*;
+import javax.swing.filechooser.FileFilter;
+import javax.swing.filechooser.FileNameExtensionFilter;
+import javax.swing.filechooser.FileSystemView;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -7,34 +15,25 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.FilenameFilter;
 import java.io.IOException;
-import javax.swing.JFileChooser;
-import javax.swing.filechooser.FileSystemView;
 
-public class Window extends JFrame {
-    public CheckboxMenuItem currItemSelected = null;
-    public CheckboxMenuItem currTierSelected = null;
+public class BuildMenu {
+
     public CheckboxMenuItem sixPointOne = null;
+    public CheckboxMenuItem addMultiple;
 
     public Menu displayCurrItem = null, displayCurrTier = null;
+    public CheckboxMenuItem currItemSelected = null;
+    public CheckboxMenuItem currTierSelected = null;
 
-    public BuildSheetView v;
-    public Window(BuildSheetData bs) {
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setSize(bs.width, bs.height + 25);
-        setLocationRelativeTo(null);
+    BuildSheetView v;
+    public MenuBar mb;
 
-        v = new BuildSheetView(bs, this);
-        add(v);
 
-        initMenu();
-
-        setVisible(true);
-
-    }
-
-    private void initMenu() {
-        String[] TopLevels = {"Item: None", "Tier: 6.1"};
+    public BuildMenu(BuildSheetView bsv) {
+        v = bsv;
+        String[] TopLevels = {"Item: None", "main.util.Tier: 6.1"};
         String[][] SubLevels = {
                 {"Warrior","Hunter","Mage","Armor"},
                 {"1.0","2.0","3.0","T4","T5","T6","T7","T8"}
@@ -57,20 +56,72 @@ public class Window extends JFrame {
                 },
                 {{{}}, {{}},{{}},{{}},{{}},{{}}}
         };
-        MenuBar mb = new MenuBar();
+        mb = new MenuBar();
         GearListener itemListener = new GearListener();
         TierListener tierListener = new TierListener();
+        MenuItemListener menuItemListener = new MenuItemListener();
+
 
         Menu fileMenu = new Menu("File");
+
+        Menu newMenu = new Menu("New");
+        MenuItem newBuildItem = new MenuItem("Build");
+        newBuildItem.setActionCommand("New Build");
+        MenuItem newTemplateItem = new MenuItem("Template");
+        newTemplateItem.setActionCommand("New Template");
+
+        newBuildItem.addActionListener(menuItemListener);
+        newTemplateItem.addActionListener(menuItemListener);
+
+        newMenu.add(newBuildItem);
+        newMenu.add(newTemplateItem);
+
+
+        Menu openMenu = new Menu("Open");
+        MenuItem openBuildItem = new MenuItem("Build");
+        openBuildItem.setActionCommand("Open Build");
+        MenuItem openTemplateItem = new MenuItem("Template");
+        openTemplateItem.setActionCommand("Open Template");
+
+        openBuildItem.addActionListener(menuItemListener);
+        openTemplateItem.addActionListener(menuItemListener);
+
+        openMenu.add(openBuildItem);
+        openMenu.add(openTemplateItem);
+
+
         MenuItem saveMenuItem = new MenuItem("Save");
         saveMenuItem.setActionCommand("Save");
+        MenuItem saveTemplateMenuItem = new MenuItem("Save as Template");
+        saveTemplateMenuItem.setActionCommand("Save as Template");
         MenuItem exportMenuItem = new MenuItem("Export");
         exportMenuItem.setActionCommand("Export");
-        MenuItemListener menuItemListener = new MenuItemListener();
+        Menu addMenu = new Menu("Add Icon");
+
+        String[] GearTypes = {"Mainhand","Offhand","Head","Chest","Feet","Food","Potion","Cape","Bag","Mount","Ability","Generic"};
+
+        for (String gearType : GearTypes) {
+            MenuItem mi = new MenuItem(gearType);
+            mi.setActionCommand("Add Icon");
+            mi.addActionListener(menuItemListener);
+            addMenu.add(mi);
+        }
+
+        addMenu.addSeparator();
+        addMultiple = new CheckboxMenuItem("Add Multiple");
+        addMenu.add(addMultiple);
+
         saveMenuItem.addActionListener(menuItemListener);
+        saveTemplateMenuItem.addActionListener(menuItemListener);
         exportMenuItem.addActionListener(menuItemListener);
-        fileMenu.add(exportMenuItem);
+
+        fileMenu.add(newMenu);
+        fileMenu.add(openMenu);
+        fileMenu.add(addMenu);
         fileMenu.add(saveMenuItem);
+        fileMenu.add(saveTemplateMenuItem);
+        fileMenu.add(exportMenuItem);
+
         mb.add(fileMenu);
 
         for (int i = 0; i < TopLevels.length; i++) {
@@ -95,7 +146,6 @@ public class Window extends JFrame {
                     }
                     topLevel.add(subLevel);
                 } else if (i == 1 && j < 3) {
-
                     chxSubLevel.addItemListener(tierListener);
                     topLevel.add(chxSubLevel);
                 } else {
@@ -114,9 +164,7 @@ public class Window extends JFrame {
             }
             mb.add(topLevel);
         }
-        setMenuBar(mb);
     }
-
     class GearListener implements ItemListener {
         @Override
         public void itemStateChanged(ItemEvent e) {
@@ -139,33 +187,31 @@ public class Window extends JFrame {
         public void itemStateChanged(ItemEvent e) {
             if (currTierSelected == null) {
                 currTierSelected = (CheckboxMenuItem) e.getSource();
-                displayCurrTier.setLabel("Tier: " + e.getItem().toString());
+                displayCurrTier.setLabel("main.util.Tier: " + e.getItem().toString());
             } else if (currTierSelected.equals(e.getSource())) {
                 currTierSelected.setState(false);
                 currTierSelected = sixPointOne;
                 currTierSelected.setState(true);
-                displayCurrItem.setLabel("Tier: " + currItemSelected.getLabel());
+                displayCurrItem.setLabel("main.util.Tier: " + currItemSelected.getLabel());
             } else {
                 currTierSelected.setState(false);
                 currTierSelected = (CheckboxMenuItem) e.getSource();
-                displayCurrTier.setLabel("Tier: " + e.getItem().toString());
+                displayCurrTier.setLabel("main.util.Tier: " + e.getItem().toString());
             }
         }
     }
     class MenuItemListener implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent e) {
-            System.out.println(e.getActionCommand());
             switch (e.getActionCommand()) {
                 case "Export":
-                    JFileChooser j = new JFileChooser(FileSystemView.getFileSystemView());
-                    int r = j.showSaveDialog(null);
+                    JFileChooser exportChooser = new JFileChooser(FileSystemView.getFileSystemView());
+                    int r = exportChooser.showSaveDialog(null);
 
                     if (r == JFileChooser.APPROVE_OPTION) {
                         try {
-                            // retrieve image
                             BufferedImage bi = (BufferedImage) v.buildImage;
-                            File outputfile = new File(j.getSelectedFile().getAbsolutePath());
+                            File outputfile = new File(exportChooser.getSelectedFile().getAbsolutePath());
                             ImageIO.write(bi, "png", outputfile);
                         } catch (IOException ee) {
                             System.out.println("Exception writing to file");
@@ -176,7 +222,34 @@ public class Window extends JFrame {
 
                     break;
                 case "Save":
+                    break;
+                case "Save as Template":
+                    v.saveTemplate();
+                    break;
+                case "Add Icon":
+                    v.placeIconMode(((MenuItem) e.getSource()).getLabel());
+                    break;
+                case "New Template":
+                    System.out.println("here");
+                    JFileChooser newTemplateChooser = new JFileChooser(FileSystemView.getFileSystemView());
+                    FileFilter imgFilter = new FileNameExtensionFilter(null, "jpg", "jpeg", "png");
+                    newTemplateChooser.addChoosableFileFilter(imgFilter);
+                    newTemplateChooser.setAcceptAllFileFilterUsed(true);
+                    r = newTemplateChooser.showOpenDialog(null);
 
+                    if (r == JFileChooser.APPROVE_OPTION) {
+                        BuildSheetData bs = new BuildSheetData(newTemplateChooser.getSelectedFile().getAbsolutePath());
+                        EzBuildWindow window = new EzBuildWindow(bs);
+
+                    } else {
+                        System.out.println("Export cancelled");
+                    }
+                    break;
+                case "New Build":
+                    break;
+                case "Open Template":
+                    break;
+                case "Open Build":
                     break;
             }
         }
