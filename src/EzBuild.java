@@ -25,27 +25,24 @@ public class EzBuild {
     BufferedReader reader;
     public EzBuild() {
         reader = new BufferedReader(new InputStreamReader(System.in));
-    }
-
-    public String getTemplate() throws IOException {
-        String template;
-        System.out.println(templatePrompt);
-        while (true) {
-            String cmd = reader.readLine();
-            int i = parseInt(cmd);
-            if (0 < i && i <= templates.length) {
-                template = templates[i-1];
-                break;
-            } else {
-                System.out.println("Please enter a valid input.");
-            }
         }
-        return template;
-    }
-    public void run() {
-//        genResourcePath();
 
-//        String t = getTemplate();
+        public String getTemplate() throws IOException {
+            String template;
+            System.out.println(templatePrompt);
+            while (true) {
+                String cmd = reader.readLine();
+                int i = parseInt(cmd);
+                if (0 < i && i <= templates.length) {
+                    template = templates[i-1];
+                    break;
+                } else {
+                    System.out.println("Please enter a valid input.");
+                }
+            }
+            return template;
+        }
+    public void run() {
         String t = "AbilityBuild";
 
         BuildSheetData bs = new BuildSheetData();

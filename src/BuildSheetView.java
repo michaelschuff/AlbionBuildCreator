@@ -14,14 +14,11 @@ import java.util.Objects;
 import static java.lang.System.exit;
 
 public class BuildSheetView extends Canvas implements MouseListener, MouseMotionListener  {
-    private final BuildSheetData data;
-    private final ArrayList<Image> images;
 
-
-    private final int rule = AlphaComposite.SRC_OVER;
-    private final Composite transparent = AlphaComposite.getInstance(rule, 0.5f);
-    private final Composite opaque = AlphaComposite.getInstance(rule, 1f);
-    private final Window window;
+    public Image buildImage;
+    public final BuildSheetData data;
+    public final ArrayList<Image> images;
+    public final Window window;
 
     public BuildSheetView(BuildSheetData d, Window w) {
         window = w;
@@ -36,8 +33,11 @@ public class BuildSheetView extends Canvas implements MouseListener, MouseMotion
     @Override
     public void paint(Graphics g) {
         super.paint(g);
-        Graphics2D g2 = (Graphics2D) g;
-        g2.drawImage(
+
+        buildImage = createImage(data.width, data.height);
+        Graphics2D imgG = (Graphics2D) buildImage.getGraphics();
+
+        imgG.drawImage(
                 data.background,
                 0, 0,
                 data.width,
@@ -51,21 +51,15 @@ public class BuildSheetView extends Canvas implements MouseListener, MouseMotion
         for (int i = 0; i < data.numItems(); i++) {
             IconView icon = data.icons.get(i);
 
-            g2.drawImage(images.get(i), icon.x, icon.y, icon.size, icon.size, this);
+            imgG.drawImage(images.get(i), icon.x, icon.y, icon.size, icon.size, this);
         }
-        g2.translate(0,25);
+        g.drawImage(buildImage, 0, 0, data.width, data.height, this);
+        g.translate(0,25);
     }
 
     @Override
     public void mouseClicked(MouseEvent e) {
-        Graphics g = getGraphics();
 
-        g.setColor(Color.red);
-
-        int mx = e.getX(), my = e.getY();
-
-
-        g.fillOval(mx, my, 5, 5);
     }
 
     @Override
@@ -88,9 +82,14 @@ public class BuildSheetView extends Canvas implements MouseListener, MouseMotion
                     System.out.println("Couldn't fetch image at: " + url_path);
                     // handle IOException
                 }
-                Graphics g = getGraphics();
                 IconView icon = data.icons.get(i);
-                g.drawImage(images.get(i), icon.x, icon.y, icon.size, icon.size, this);
+                Graphics imgG = buildImage.getGraphics();
+                imgG.drawImage(images.get(i), icon.x, icon.y, icon.size, icon.size, this);
+
+                Graphics g = getGraphics();
+                g.drawImage(buildImage, 0, 0, data.width, data.height, this);
+                g.translate(0,25);
+                break;
             }
         }
     }
@@ -134,17 +133,12 @@ public class BuildSheetView extends Canvas implements MouseListener, MouseMotion
             if (!Objects.equals(icon.id, "")) {
                 try {
                     InputStream is = getClass().getResourceAsStream("resources/icons/" + icon.id);
-
                     im = ImageIO.read(is);
-//                    im = ImageIO.read(ResourcePath.getURL(icon.id));
                 } catch (IOException e) {
                     System.out.println("Could not read image at " + icon.id + ".png");
                     try {
-
                         InputStream is = getClass().getResourceAsStream("resources/icons/empty/" + icon.type.toString() + ".png");
-
                         im = ImageIO.read(is);
-//                        im = ImageIO.read(ResourcePath.getURL("icons/empty/" + icon.type.toString() + ".png"));
                     } catch (IOException ee) {
                         System.out.println("Could not read empty image file at icons/empty/" + icon.type.toString() + ".png");
                         exit(0); return;
@@ -154,9 +148,7 @@ public class BuildSheetView extends Canvas implements MouseListener, MouseMotion
                 try {
 
                     InputStream is = getClass().getResourceAsStream("resources/icons/empty/" + icon.type.toString() + ".png");
-
                     im = ImageIO.read(is);
-//                    im = ImageIO.read(ResourcePath.getURL("icons/empty/" + icon.type.toString() + ".png"));
                 } catch (IOException e) {
                     System.out.println("Could not read empty image file at icons/empty/" + icon.type.toString() + ".png");
                     exit(0); return;

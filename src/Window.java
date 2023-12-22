@@ -1,7 +1,15 @@
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
+import javax.swing.JFileChooser;
+import javax.swing.filechooser.FileSystemView;
 
 public class Window extends JFrame {
     public CheckboxMenuItem currItemSelected = null;
@@ -9,12 +17,15 @@ public class Window extends JFrame {
     public CheckboxMenuItem sixPointOne = null;
 
     public Menu displayCurrItem = null, displayCurrTier = null;
+
+    public BuildSheetView v;
     public Window(BuildSheetData bs) {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setSize(bs.width, bs.height + 25);
         setLocationRelativeTo(null);
 
-        add(new BuildSheetView(bs, this));
+        v = new BuildSheetView(bs, this);
+        add(v);
 
         initMenu();
 
@@ -23,14 +34,12 @@ public class Window extends JFrame {
     }
 
     private void initMenu() {
-        String[] TopLevels = {"File", "Item: None", "Tier: 6.1"};
+        String[] TopLevels = {"Item: None", "Tier: 6.1"};
         String[][] SubLevels = {
-                {"Export","Save","Save Template"},
                 {"Warrior","Hunter","Mage","Armor"},
                 {"1.0","2.0","3.0","T4","T5","T6","T7","T8"}
         };
         String[][][] SubSubLevels = {
-                {{},{}, {}},
                 {
                         {"Sword", "Axe", "Mace", "Hammer", "Gloves", "Crossbow", "Shield"},
                         {"Bow", "Dagger", "Spear", "Quarterstaff", "Shapeshifter", "Nature", "Torch"},
@@ -40,7 +49,6 @@ public class Window extends JFrame {
                 {{},{},{}, {"4.0","4.1","4.2","4.3","4.4"}, {"5.0","5.1","5.2","5.3","5.4"}, {"6.0","6.1","6.2","6.3","6.4"}, {"7.0","7.1","7.2","7.3","7.4"}, {"8.0","8.1","8.2","8.3","8.4"}}
         };
         String[][][][] SubSubSubLevels = {
-                {{},{}, {}},
                 {
                         {{"Broadsword","Claymore","Dual Swords","Clarent Blade","Carving Sword","Galatine Pair","Kingmaker"},{"Battleaxe","Greataxe","Halberd","Carrioncaller","Infernal Scythe","Bear Paws","Realmbreaker"},{"Mace","Heavy Mace","Morning Star","Bedrock Mace","Incubus Mace","Camlann Mace","Oathkeepers"},{"Hammer","Great Hammer","Polehammer","Tombhammer","Forge Hammers","Grovekeeper","Hand of Justice"},{"Brawler Gloves","Battle Bracers","Spiked Guantlets","Ursine Maulers","Hellfire Hands","Ravenstrike Cestus","Fists of Avalon"},{"Crossbow","Heavy Crossbow","Light Crossbow","Weeping Repeater","Boltcasters","Siegebow","Energy Shaper"},{"Shield","Sarcophagus","Caitiff","Facebreaker","Astral Aegis"}},
                         {{"Bow","Warbow","Longbow","Whispering Bow","Wailing Bow","Bow of Badon","Mistpiercer"},{"Dagger","Dagger Pair","Claws","Bloodletter","Demonfang","Deathgivers","Bridled Fury"},{"Spear","Pike","Glaive","Heron Spear","Spirithunter","Trinity Spear","Daybreaker"},{"Quarterstaff","Iron-clad Staff","Double Bladed Staff","Black Monk Stave","Soulscythe","Staff of Balance","Grailseeker"},{"Prowling Staff","Rootbound Staff","Primal Staff","Bloodmoon Staff","Hellspawn Staff","Earthrune Staff","Lightcaller"},{"Nature Staff","Great Nature Staff","Wild Staff","Druidic Staff","Blight Staff","Rampant Staff","Ironroot Staff"},{"Torch","Mistcaller","Leering Cane","Cryptcandle","Sacred Scepter"}},
@@ -53,6 +61,18 @@ public class Window extends JFrame {
         GearListener itemListener = new GearListener();
         TierListener tierListener = new TierListener();
 
+        Menu fileMenu = new Menu("File");
+        MenuItem saveMenuItem = new MenuItem("Save");
+        saveMenuItem.setActionCommand("Save");
+        MenuItem exportMenuItem = new MenuItem("Export");
+        exportMenuItem.setActionCommand("Export");
+        MenuItemListener menuItemListener = new MenuItemListener();
+        saveMenuItem.addActionListener(menuItemListener);
+        exportMenuItem.addActionListener(menuItemListener);
+        fileMenu.add(exportMenuItem);
+        fileMenu.add(saveMenuItem);
+        mb.add(fileMenu);
+
         for (int i = 0; i < TopLevels.length; i++) {
             Menu topLevel = new Menu(TopLevels[i]);
             if (i == 1) {
@@ -63,7 +83,7 @@ public class Window extends JFrame {
             for (int j = 0; j < SubLevels[i].length; j++) {
                 Menu subLevel = new Menu(SubLevels[i][j]);
                 CheckboxMenuItem chxSubLevel = new CheckboxMenuItem(SubLevels[i][j]);
-                if (i == 1) {
+                if (i == 0) {
                     for (int k = 0; k < SubSubLevels[i][j].length; k++) {
                         Menu SubSubLevel = new Menu(SubSubLevels[i][j][k]);
                         for (int l = 0; l < SubSubSubLevels[i][j][k].length; l++) {
@@ -74,7 +94,7 @@ public class Window extends JFrame {
                         subLevel.add(SubSubLevel);
                     }
                     topLevel.add(subLevel);
-                } else if (i == 2 && j < 3) {
+                } else if (i == 1 && j < 3) {
 
                     chxSubLevel.addItemListener(tierListener);
                     topLevel.add(chxSubLevel);
@@ -129,6 +149,35 @@ public class Window extends JFrame {
                 currTierSelected.setState(false);
                 currTierSelected = (CheckboxMenuItem) e.getSource();
                 displayCurrTier.setLabel("Tier: " + e.getItem().toString());
+            }
+        }
+    }
+    class MenuItemListener implements ActionListener {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            System.out.println(e.getActionCommand());
+            switch (e.getActionCommand()) {
+                case "Export":
+                    JFileChooser j = new JFileChooser(FileSystemView.getFileSystemView());
+                    int r = j.showSaveDialog(null);
+
+                    if (r == JFileChooser.APPROVE_OPTION) {
+                        try {
+                            // retrieve image
+                            BufferedImage bi = (BufferedImage) v.buildImage;
+                            File outputfile = new File(j.getSelectedFile().getAbsolutePath());
+                            ImageIO.write(bi, "png", outputfile);
+                        } catch (IOException ee) {
+                            System.out.println("Exception writing to file");
+                        }
+                    } else {
+                        System.out.println("Export cancelled");
+                    }
+
+                    break;
+                case "Save":
+
+                    break;
             }
         }
     }
